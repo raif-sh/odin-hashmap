@@ -19,4 +19,41 @@ class HashMap {
 
         return hashCode % this.capacity;
     }
+
+    set(key, value) {
+        // cal the hash of the key
+        const index = this.hash(key);
+
+        // find right bucket
+        const bucket = this.buckets[index];
+
+        // check if key already exists
+        const existingPair = bucket.find(pair => pair[0] === key);
+
+        // handle collisions properly
+        if (existingPair) {
+            // update existing value
+            existingPair[1] = value;
+        } else {
+            // Add new key-value pair
+            bucket.push([key, value]);
+            this.size++;
+        }
+    }
+
+    get(key) {
+        const index = this.hash(key);
+
+        // find matching bucket
+        const bucket = this.buckets[index];
+
+        const pair = bucket.find(pair => pair[0] === key);
+
+        return pair ? pair[1] : undefined;
+    }
 }
+
+const map = new HashMap();
+
+map.set("name", "hulu lulu");
+console.log(map.get("name"));
