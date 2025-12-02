@@ -30,7 +30,7 @@ class HashMap {
         // check if key already exists
         const existingPair = bucket.find(pair => pair[0] === key);
 
-        // handle collisions properly
+        // handle value to key assignment
         if (existingPair) {
             // update existing value
             existingPair[1] = value;
@@ -38,6 +38,11 @@ class HashMap {
             // Add new key-value pair
             bucket.push([key, value]);
             this.size++;
+        }
+
+        // check if we need to resize
+        if(this.size / this.capacity > this.loadfactor) {
+            this.resize();
         }
     }
 
@@ -54,8 +59,9 @@ class HashMap {
     }
 
     has(key) {
-        // use get function to check if a key exists
-        return this.get(key) !== undefined;
+        const index = this.hash(key);
+        const bucket = this.buckets[index];
+        return bucket.some(pair => pair[0] === key);
     }
 
     remove(key) {
@@ -115,20 +121,36 @@ class HashMap {
         return allEntries;
     }
 
+    resize() {
+        // console.log("resizing with more capacity");
+        // Get existing bucket and capacity
+        const oldBucket = this.buckets;
+        const oldCapacity = this.capacity;
+
+        // double capacity
+        this.capacity = oldCapacity * 2;
+
+        // create new buckets array
+        this.buckets = new Array(this.capacity).fill(null).map(() => []);
+
+        // reset size
+        this.size = 0;
+
+        // re-hash and re-add all existing items
+        for (let i = 0; i < oldCapacity; i++) {
+            const bucket = oldBucket[i];
+
+            for (const [key, value] of bucket) {
+                // Re-add each item to new bucket
+                // this will use the new capacity in the hash function
+                const index = this.hash(key);
+                this.buckets[index].push([key, value]);
+                this.size++;
+            }
+        }
+        // console.log("new capacity is: " + this.capacity);
+
+    }
 }
 
-const map = new HashMap();
-
-map.set("name", "hulu lulu");
-map.set("age", 325);
-map.set("food", "pizza");
-map.set("food", "biryani");
-map.set("drink", "teh");
-console.log(map.hash("ad"), map.hash("bc"));
-
-// console.log(map.get("food"));
-// console.log(map.has("name"));
-// console.log(map.remove("drink"));
-// console.log(map.keys());
-// console.log(map.values());
-// console.log(map.entries());
+export { HashMap };
